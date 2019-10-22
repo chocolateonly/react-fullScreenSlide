@@ -4,7 +4,8 @@ class SectionWrapper extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeSection: 0
+      activeSection: 0,
+      screenHeight:0
     }
   }
 
@@ -20,7 +21,7 @@ class SectionWrapper extends Component {
     if (anchorName) {
       let anchorElement = document.getElementById(anchorName);
       if (anchorElement) {
-        anchorElement.scrollIntoView({block: 'start', behavior: 'smooth'});
+        setTimeout(()=>anchorElement.scrollIntoView({block: 'start', behavior: 'smooth'}),0)
       }
     }
   };
@@ -33,19 +34,29 @@ class SectionWrapper extends Component {
     if (newActiveSection >= sections.length || newActiveSection < 0) return;
     return this.goNext(newActiveSection)
   };
-
-
+  handleLoad=()=>{
+    this.handleResize();
+  };
+  handleResize=()=>{
+    console.log(window.innerHeight);
+    const {sections}=this.props;
+    this.setState({screenHeight:window.innerHeight},()=>this.scrollToAnchor(sections[this.state.activeSection]))
+  };
   componentDidMount() {
     window.addEventListener('wheel', this.handleMouseScroll);
+    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('load', this.handleLoad);
   }
 
   componentWillUnmount() {
     window.removeEventListener('wheel', this.handleMouseScroll);
+    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('load', this.handleLoad);
   }
 
   render() {
     const {sections, backgroundColor} = this.props;
-    const {activeSection} = this.state;
+    const {activeSection,screenHeight} = this.state;
 
     const navStyle = {
       position: 'fixed',
@@ -53,7 +64,7 @@ class SectionWrapper extends Component {
       margin: 0,
       padding:0,
       zIndex: '10',
-      right: '20px',
+      right: 10,
       top: '50%',
       transform: 'translate(-50%, -50%)'//center css
     };
@@ -68,16 +79,13 @@ class SectionWrapper extends Component {
       cursor: 'pointer',
     };
     const sectionWrapperStyle = {
-      height: '100vh',
+      position:'absolute',
+      width:'100%',
+      height: '100%',
       overflow: 'hidden',
-      transform: {translateY: '-100vh'}
     };
     const sectionStyle = {
-      display: 'flex',
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
+      height: screenHeight,
       width: '100%',
       background: '#ccc',
       color: '#fff',
